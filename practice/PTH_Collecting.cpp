@@ -1,76 +1,94 @@
-#include <bits/stdc++.h>
+include <bits/stdc++.h>
 using namespace std;
 
-const int INF = INT_MAX;
+const int INF = 1e9; // A large value representing infinity
 
-struct State {
-    int city, rank, time;
-    bool operator>(const State& other) const {
-        return time > other.time;
+// Input variables
+int n, m, t, st, en;
+vector<vector<pair<int, int>>> g; // Graph: g[u] = {v, w}
+vector<vector<int>> dis; // dis[city][level] = minimum time to reach (city, level)
+vector<int> level; // Rank of each city
+
+// Priority queue for Dijkstra (time, city, level)
+priority_queue<tuple<int, int, int>, vector<tuple<int, int, int>>, greater<tuple<int, int, int>>> pq;
+
+int main() {
+    // Input: Number of cities (n), roads (m), target rank (t), start (st), end (en)
+    cin >> n >> m >> t >> st >> en;
+
+    // Resize vectors based on input
+    g.resize(n + 1);
+    dis.resize(n + 1, vector<int>(t + 2, INF));
+    level.resize(n + 1);
+
+    // Input: Rank of each city (1-based index)
+    for (int i = 1; i <= n; i++) {
+        cin >> level[i];
     }
-};
 
-int N, M, L, s, t;
-vector<pair<int, int>> graph[50005];
-int cityRank[50005];
-int dist[50005][35];
+    // Input: Roads (u -> v with time w)
+    for (int i = 0; i < m; i++) {
+        int u, v, w;
+        cin >> u >> v >> w;
+        g[u].emplace_back(v, w);
+    }
 
-void dijkstra() {
-    priority_queue<State, vector<State>, greater<State>> pq;
-    pq.push({s, 0, 0});
-    dist[s][0] = 0;
+    // Starting point: Distance to the starting city at level 0 is 0
+    dis[st][0] = 0;
+    pq.emplace(0, st, 0);
 
+    // Modified Dijkstra's algorithm
     while (!pq.empty()) {
-        State cur = pq.top();
+        auto [time, u, curr_level] = pq.top();
         pq.pop();
 
-        int u = cur.city, rank = cur.rank, time = cur.time;
+        // If already found a shorter path, skip
+        if (time > dis[u][curr_level]) continue;
 
-        if (u == t && rank == L) {
-            cout << time << "\n";
-            return;
-        }
+        // Explore all neighbors (v, travel time w)
+        for (auto [v, w] : g[u]) {
+            // Case 1: Move to the next level if the city matches the next required rank
+            if (curr_level + 1 <= t && level[v] == curr_level + 1) {
+                if (dis[v][curr_level + 1] > time + w) {
+                    dis[v][curr_level + 1] = time + w;
+                    pq.emplace(dis[v][curr_level + 1], v, curr_level + 1);
+                }
+            }
 
-        if (time > dist[u][rank]) continue;
-
-        for (auto [v, w] : graph[u]) {
-            int nextRank = rank;
-
-            if (cityRank[v] == rank + 1) nextRank++;
-            if (cityRank[v] > L + 1 || (cityRank[v] != nextRank && cityRank[v] <= L)) continue;
-
-            if (time + w < dist[v][nextRank]) {
-                dist[v][nextRank] = time + w;
-                pq.push({v, nextRank, time + w});
+            // Case 2: Stay in the current level if the city is not the next rank
+            if (dis[v][curr_level] > time + w) {
+                dis[v][curr_level] = time + w;
+                pq.emplace(dis[v][curr_level], v, curr_level);
             }
         }
     }
 
-    cout << -1 << "\n"; // No valid path found
-}
+    // Output: Minimum time to reach the end city with rank t
+    if (dis[en][t] == INF) cout << -1; // No valid path
+    else cout << dis[en][t]; // Output the shortest time
 
-int main() {
-    ios::sync_with_stdio(false);
-    cin.tie(nullptr);
-
-    cin >> N >> M >> L;
-    cin >> s >> t;
-
-    for (int i = 1; i <= N; i++) {
-        cin >> cityRank[i];
-    }
-
-    for (int i = 0; i < M; i++) {
-        int A, B, C;
-        cin >> A >> B >> C;
-        graph[A].emplace_back(B, C);
-    }
-
-    // Initialize distances
-    for (int i = 0; i <= N; i++) {
-        fill(dist[i], dist[i] + (L + 2), INF);
-    }
-
-    dijkstra();
     return 0;
 }
+
+////
+
+// dist[city][level]
+
+// dist[1][0] = 0
+// dist[3][1] = 80 -> pq
+// dist[2][0] = 20 -> pq
+
+// time = 20
+// city = 2
+// level = 0
+
+// dist[4][1] = 50 -> pq
+// dist[5][0] = 35 -> pq
+// .
+// dist[6][0] = 80 -> pq
+// .
+// .
+// dist[2][2] = 90 -> pq
+
+// dist[6][3] ?
+

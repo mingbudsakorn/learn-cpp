@@ -46,7 +46,7 @@ int find(int i) {
     return parent[i] = find(parent[i]);
 }
 
-void unite(int targetParent, int child, int manParent, int manChild) {
+void unite(int targetParent, int child, int manChild) {
     int manToTransfer = manChild/2;
     parent[child] = targetParent;
     man[targetParent] += manToTransfer;   
@@ -68,19 +68,19 @@ int fight(int a, int b) {
         if (parentA < parentB) {
             //parentA win
             win = parentA;
-            unite(parentA, parentB, manA, manB);
+            unite(parentA, parentB, manB);
         } else {
             win = parentB;
-            unite(parentB, parentA, manB, manA);
+            unite(parentB, parentA, manA);
         }
     } else if (manA < manB) {
         //parentB win
         win = parentB;
-        unite(parentB, parentA, manB, manA);
+        unite(parentB, parentA, manA);
     } else {
         //parentA win
         win = parentA;
-        unite(parentA, parentB, manA, manB);
+        unite(parentA, parentB, manB);
     }
     return win;
 }
