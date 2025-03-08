@@ -48,7 +48,7 @@ int main() {
         // Explore all neighbors (v, travel time w)
         for (auto [v, w] : g[u]) {
             // Case 1: Move to the next level if the city matches the next required rank
-            if (curr_level + 1 <= t && level[v] == curr_level + 1) {
+            if (curr_level + 1 <= L && level[v] == curr_level + 1) {
                 if (dis[v][curr_level + 1] > time + w) {
                     dis[v][curr_level + 1] = time + w;
                     pq.emplace(dis[v][curr_level + 1], v, curr_level + 1);
